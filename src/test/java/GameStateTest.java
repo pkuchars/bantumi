@@ -4,12 +4,16 @@ import static org.bantumi.Turn.*;
 
 import java.util.List;
 
+import org.bantumi.Turn;
 import org.junit.Test;
 
 import org.bantumi.GameState;
 import org.bantumi.Move;
 import org.bantumi.Score;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class GameStateTest {
 
     @Test
@@ -152,6 +156,13 @@ public class GameStateTest {
 
         assertThat(newGameState).isEqualTo(new GameState(asList(0, 0, 0, 0, 0, 0), asList(0, 0, 0, 0, 0, 0), GAME_END, new Score(8, 0)));
 
+    }
+
+    @Test
+    public void provides_possible_moves() {
+        GameState gameState = new GameState(asList(1, 1, 0, 1, 1, 1), asList(0, 0, 0, 3, 0, 0), PLAYER_A, new Score(0, 0));
+
+        assertThat(gameState.possibleMoves()).containsOnly(new Move(0), new Move(1), new Move(3), new Move(4), new Move(5));
     }
 
 }

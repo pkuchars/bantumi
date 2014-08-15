@@ -1,10 +1,14 @@
 package org.bantumi;
 
+import static java.util.stream.Collectors.*;
 import static java.util.stream.IntStream.*;
 import static org.bantumi.Buckets.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -49,6 +53,10 @@ public class GameState {
     }
 
     public GameState performMove(Move fromBucket) {
+        if(playerHavingTurnBuckets.get(fromBucket.getBucketIndex()).isEmpty()) {
+            throw new RuntimeException("Z pustego kosza, osle?!");
+        }
+
         MoveInfo move = new MoveInfo(fromBucket);
 
         Buckets newPlayerHavingTurnBuckets = newBuckets(index -> bucketOfPlayerHavingTurnAfterMove(move, index));
@@ -65,6 +73,13 @@ public class GameState {
             return new GameState(newOtherPlayerBuckets, newPlayerHavingTurnBuckets, turn.getOtherPlayer(), newScore);
 
         }
+    }
+
+    public Collection<Move> possibleMoves() {
+        return IntStream.range(0, playersSmallBucketsCount).boxed()
+                .filter(i -> !playerHavingTurnBuckets.get(i).isEmpty())
+                .map(Move::new)
+                .collect(toList());
     }
 
     private Score finalScore(Buckets newPlayerHavingTurnBuckets, Buckets newOtherPlayerBuckets, Score newScore) {
@@ -106,10 +121,10 @@ public class GameState {
         if (move.isEndingInPlayersEmptyBucket(oppositeBucket)) {
             return new Bucket(0);
         }
-        return otherPlayerBuckets.get(index).withBeansAdded(beansLandingIn(move, opponentEquivalenIndexOf(index)));
+        return otherPlayerBuckets.get(index).withBeansAdded(beansLandingIn(move, opponentEquivalentIndexOf(index)));
     }
 
-    private int opponentEquivalenIndexOf(Integer index) {
+    private int opponentEquivalentIndexOf(Integer index) {
         return index + playersSmallBucketsCount + 1;
     }
 
@@ -152,6 +167,14 @@ public class GameState {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
+
+    public Score getScore() {
+        return score;
+    }
+
+    public Turn getTurn() {
+        return turn;
     }
 
     private class MoveInfo {
